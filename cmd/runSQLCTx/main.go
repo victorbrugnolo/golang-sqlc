@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/google/uuid"
 	"golang-sqlc/internal/db"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -102,25 +101,36 @@ func main() {
 		_ = dbConn.Close()
 	}(dbConn)
 
-	//queries := db.New(dbConn)
+	queries := db.New(dbConn)
 
-	courseArgs := CourseParams{
-		ID:          uuid.New().String(),
-		Name:        "Go",
-		Description: sql.NullString{String: "Go Course", Valid: true},
-		Price:       999.99,
-	}
+	//courseArgs := CourseParams{
+	//	ID:          uuid.New().String(),
+	//	Name:        "Go",
+	//	Description: sql.NullString{String: "Go Course", Valid: true},
+	//	Price:       999.99,
+	//}
+	//
+	//categoryArgs := CategoryParams{
+	//	ID:          uuid.New().String(),
+	//	Name:        "Backend",
+	//	Description: sql.NullString{String: "Backend courses", Valid: true},
+	//}
+	//
+	//courseDB := NewCourseDB(dbConn)
+	//err = courseDB.CreateCourseAndCategory(ctx, categoryArgs, courseArgs)
+	//
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	categoryArgs := CategoryParams{
-		ID:          uuid.New().String(),
-		Name:        "Backend",
-		Description: sql.NullString{String: "Backend courses", Valid: true},
-	}
-
-	courseDB := NewCourseDB(dbConn)
-	err = courseDB.CreateCourseAndCategory(ctx, categoryArgs, courseArgs)
+	courses, err := queries.ListCourses(ctx)
 
 	if err != nil {
 		panic(err)
+	}
+
+	for _, course := range courses {
+		fmt.Printf("Category: %s, Course ID: %s, Course Description: %s, Course Price: %f",
+			course.CategoryName, course.ID, course.Description.String, course.Price)
 	}
 }
