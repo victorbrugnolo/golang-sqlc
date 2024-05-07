@@ -4,7 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/google/uuid"
 	"golang-sqlc/internal/db"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type CourseDB struct {
@@ -23,6 +26,7 @@ type CourseParams struct {
 	ID          string
 	Name        string
 	Description sql.NullString
+	Price       float64
 }
 
 type CategoryParams struct {
@@ -69,6 +73,7 @@ func (c *CourseDB) CreateCourseAndCategory(ctx context.Context, argsCategory Cat
 			Name:        argsCourse.Name,
 			Description: argsCourse.Description,
 			CategoryID:  argsCategory.ID,
+			Price:       argsCourse.Price,
 		})
 
 		if err != nil {
@@ -97,5 +102,25 @@ func main() {
 		_ = dbConn.Close()
 	}(dbConn)
 
-	queries := db.New(dbConn)
+	//queries := db.New(dbConn)
+
+	courseArgs := CourseParams{
+		ID:          uuid.New().String(),
+		Name:        "Go",
+		Description: sql.NullString{String: "Go Course", Valid: true},
+		Price:       999.99,
+	}
+
+	categoryArgs := CategoryParams{
+		ID:          uuid.New().String(),
+		Name:        "Backend",
+		Description: sql.NullString{String: "Backend courses", Valid: true},
+	}
+
+	courseDB := NewCourseDB(dbConn)
+	err = courseDB.CreateCourseAndCategory(ctx, categoryArgs, courseArgs)
+
+	if err != nil {
+		panic(err)
+	}
 }
